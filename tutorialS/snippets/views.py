@@ -76,6 +76,8 @@ def snippet_detail(request, pk, format=None):
     except Snippet.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     
+
+    
     if request.method == 'GET':
         serializer = SnippetModelSerializer(snippet)
         return Response(serializer.data)
