@@ -17,6 +17,10 @@ from rest_framework import status
 #generic APIView & Mixins
 from rest_framework import mixins
 from rest_framework import generics
+#Authentication & Permissions
+from django.contrib.auth.models import User
+from snippets.serializers import UserSerializer
+
 
 '''1. Serialization'''
 # @csrf_exempt
@@ -175,11 +179,23 @@ from rest_framework import generics
 #     def delete(self, request, *args, **kwargs):
 #         return self.destroy(request, *args, **kwargs)
 
-'''list와 detail을을 제네릭뷰로 만듦'''
+'''list와 detail을 제네릭뷰로 만듦'''
 class SnippetList(generics.ListCreateAPIView):
     queryset = Snippet.objects.all()
     serializer_class = SnippetModelSerializer
+#사용자와 스니펫 연결하기기
+    def perform_create(self, serializer):#create()메서드를 오버라이드해서 owner필드를 저장
+        serializer.save(owner=self.request.user)#owner필드에 현재 인증된 사용자를 할당
 
 class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Snippet.objects.all()
     serializer_class = SnippetModelSerializer
+
+'''유저 list와 detail을 제네릭뷰로 만듦'''
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all() 
+    serializer_class = UserSerializer
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
