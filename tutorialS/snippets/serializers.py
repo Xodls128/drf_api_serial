@@ -12,6 +12,7 @@ class SnippetSerializer(serializers.Serializer):
     linenos = serializers.BooleanField(required=False)
     language = serializers.ChoiceField(choices=LANGUAGE_CHOICES, default='python')
     style = serializers.ChoiceField(choices=STYLES_CHOICES, default='friendly')
+    owner = serializers.ReadOnlyField(source='owner.username')#이렇게하면 owner필드는 읽기전용이 됨, 유저 이름을 보여줌
 
     def create(self, validated_data):
         return Snippet.objects.create(**validated_data)
