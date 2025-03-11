@@ -1,6 +1,8 @@
 from django.urls import path
 from snippets import views
 from rest_framework.urlpatterns import format_suffix_patterns
+
+
 '''함수기반 뷰일때'''
 # urlpatterns =[ 
 #      path('snippets/', views.snippet_list),

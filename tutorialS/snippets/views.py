@@ -4,23 +4,25 @@ from rest_framework.parsers import JSONParser
 from snippets.models import Snippet
 from snippets.serializers import SnippetModelSerializer
 
-#api Rq and Rp
+#1api Rq and Rp
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-#Class based Views
+#2Class based Views
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-#generic APIView & Mixins
+#3generic APIView & Mixins
 from rest_framework import mixins
 from rest_framework import generics
-#Authentication & Permissions
+#4.Authentication 
 from django.contrib.auth.models import User
 from snippets.serializers import UserSerializer
 
+#4.Permissions
+from rest_framework import permissions
 
 '''1. Serialization'''
 # @csrf_exempt
@@ -186,10 +188,12 @@ class SnippetList(generics.ListCreateAPIView):
 #사용자와 스니펫 연결하기기
     def perform_create(self, serializer):#create()메서드를 오버라이드해서 owner필드를 저장
         serializer.save(owner=self.request.user)#owner필드에 현재 인증된 사용자를 할당
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]#인증된 사용자만 수정가능
 
 class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Snippet.objects.all()
     serializer_class = SnippetModelSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]#인증된 사용자만 수정가능
 
 '''유저 list와 detail을 제네릭뷰로 만듦'''
 class UserList(generics.ListAPIView):
