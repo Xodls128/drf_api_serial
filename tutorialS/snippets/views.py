@@ -12,7 +12,7 @@ from rest_framework.response import Response
 #2Class based Views
 from django.http import Http404
 from rest_framework.views import APIView
-from rest_framework.response import Response
+#from rest_framework.response import Response 중복복
 from rest_framework import status
 #3generic APIView & Mixins
 from rest_framework import mixins
@@ -23,14 +23,24 @@ from snippets.serializers import UserSerializer
 
 #4.Permissions
 from rest_framework import permissions
+from snippets.permissions import IsOwnerOrReadOnly
 
 #5.Relationships 
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
+#from rest_framework.decorators import api_view 중복복
+#from rest_framework.response import Response 중복복
 from rest_framework.reverse import reverse
-from rest_framework import renderers
 
 #5.Hyperlinked APIs
+from rest_framework import renderers
+
+#6.ViewSets
+from rest_framework import viewsets
+#from rest_framework import renderers 중복
+from rest_framework.decorators import action
+#from rest_framework.response import Response 중복복
+
+
+
 
 '''1. Serialization'''
 # @csrf_exempt
@@ -229,3 +239,30 @@ class SnippetHighlight(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         snippet = self.get_object()
         return Response(snippet.highlighted)
+    # 이 뷰는 JSON이 아니라 HTML 데이터를 직접 반환해야 하므로
+    #StaticHTMLRenderer를 사용함
+    #Snippet의 하이라이티드 필드는 하이라이트 된 HTML을 저장하는필드임
+    #따라서 변환없이 그대로 반환하는 것이 적절
+
+'''ViewSets을 사용'''
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    '''ReadOnlyModelViewSet은 자동으로 list와 detail을 생성해줌'''
+
+class SnippetViewSet(viewsets.ModelViewSet):
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetModelSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    '''ModelViewSet은 자동으로 list, create, retrieve, update, destroy를 생성해줌'''
+    @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer])
+    #action 데코레이터는 사용자 정의의 뷰셋 액션을 추가할 수 있게 해줌
+    def highlight(self, request, *args, **kwargs):
+        snippet = self.get_object()
+        return Response(snippet.highlighted)
+    #이렇게하면 하이라이트 액션을 추가할 수 있음
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+    #이렇게하면 스니펫을 생성할때 owner필드에 현재 인증된 사용자를 할당함
+    #이렇게하면 인증된 사용자만 수정가능하게 할수 있음
