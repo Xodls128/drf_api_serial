@@ -24,6 +24,14 @@ from snippets.serializers import UserSerializer
 #4.Permissions
 from rest_framework import permissions
 
+#5.Relationships 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
+from rest_framework import renderers
+
+#5.Hyperlinked APIs
+
 '''1. Serialization'''
 # @csrf_exempt
 # def snippet_list(request):
@@ -203,3 +211,21 @@ class UserList(generics.ListAPIView):
 class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+
+@api_view(['GET'])
+def api_root(request, format=None):
+    return Response({
+        'users': reverse('user-list', request=request, format=format),
+        'snippets': reverse('snippet-list', request=request, format=format)
+    })
+#이렇게하면 API의 루트로 이동할 수 있는 URL을 반환함
+
+
+class SnippetHighlight(generics.GenericAPIView):
+    queryset = Snippet.objects.all()
+    renderer_classes = [renderers.StaticHTMLRenderer]
+
+    def get(self, request, *args, **kwargs):
+        snippet = self.get_object()
+        return Response(snippet.highlighted)

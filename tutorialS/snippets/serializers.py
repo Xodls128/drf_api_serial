@@ -29,9 +29,9 @@ class SnippetSerializer(serializers.serializer):
         
         return instance
 
-class SnippetModelSerializer(serializers.ModelSerializer):#이렇게하면 create랑 update 자동으로 해줌, 직렬화도 필드일일이 지정안하고 자동으로 해줌줌
+class SnippetModelSerializer(serializers.ModelSerializer):#이렇게하면 create랑 update 자동으로 해줌, 직렬화도 필드일일이 지정안하고 자동으로 해줌
     
-    owner = serializers.ReadOnlyField(source='owner.username')#메타 밖에다 정의해야 리드온리로 할수 있음. 이러면 유저 이름으로 보여줌
+    owner = serializers.ReadOnlyField(source='owner.username')#메타 밖에다 정의해야 리드온리로 할수 있음. 이러면 유저 이름으로 반환됨
     class Meta:
 #만약 메타 안에다가 정의하면 owner필드는 외래키 이므로 기본적으로 ID로 변환됨 + 리드온리 설정안됨됨
         model = Snippet
@@ -46,4 +46,24 @@ class UserSerializer(serializers.Modelserializer):
         model = User
         fields = ['id', 'username', 'snippets']
 #스니펫은 '유저 모델'에서 역직렬화를 해야하기 때문에 새로운 직렬화클래스가 필요함
+
+#5.hyperlinked APIs
+
+class UserSerializerHyperlinked(serializers.HyperlinkedModelSerializer):
+    snippets = serializers.HyperlinkedRelatedField(
+        many=True,
+        view_name='snippet-detail',
+        read_only=True
+    )
+    class Meta:
+        model = User
+        fields = ['url', 'id', 'username', 'snippets']
+
+class SnippetSerializerHyperlinked(serializers.HyperlinkedModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
+    highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight', format='html')
+
+    class Meta:
+        model = Snippet
+        fields = ['url', 'id', 'highlight', 'owner', 'title', 'code', 'linenos', 'language', 'style']
 

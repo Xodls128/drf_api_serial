@@ -27,7 +27,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10 #한페이지에 10개씩 반환
+}
 # Application definition
 
 INSTALLED_APPS = [
